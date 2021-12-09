@@ -9,14 +9,6 @@ import "../interfaces/IBorrower.sol";
 contract FlashMintableERC20 is ERC20, IFlashMintableERC20 {
 
     uint256 public immutable cap;
-    uint256 private unlocked = 1;
-
-    modifier nonReentrant() {
-        require(unlocked == 1, 'Flash ERC20: Locked');
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
 
     constructor(uint256 _initialSupply) public ERC20("Flash", "FLASH") {
         _mint(msg.sender, _initialSupply);
@@ -30,19 +22,15 @@ contract FlashMintableERC20 is ERC20, IFlashMintableERC20 {
     }
 
     // Allows anyone to mint the token as long as the same amount gets burned by the end of the transaction.
-    function flashMint(uint256 _amount) external override nonReentrant returns (bool) {
+    function flashMint(uint256 _amount) external override returns (bool) {
         // mint tokens
         _flashMint(msg.sender, _amount);
-
         // hand control to borrower
         IBorrower(msg.sender).executeOnFlashMint(_amount);
-
         // burn tokens
         _burn(msg.sender, _amount); // reverts if `msg.sender` does not have enough tokens to burn
-
         // double-check that all minted tokens have been burned
         assert(cap == totalSupply());
-
         emit FlashMint(msg.sender, _amount);
     }
 }
