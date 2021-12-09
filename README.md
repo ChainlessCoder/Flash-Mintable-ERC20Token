@@ -1,2 +1,2 @@
-# Self-Backed Flash-Mintable Token
-Imagine if all of your users where whales
+# Flash-Mintable ERC20 Token
+Every nerd can be rich for an instance 
